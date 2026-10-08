@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List
-from app.schemas.domain import SiteCreate, SiteRead
+from app.schemas.domain import SiteCreate, SiteRead, AssetRead, ZoneRead
 from app.schemas.extended import PaginatedResponse
 from app.infrastructure.db.session import get_db
 from app.services.sites_service import sites_service
@@ -20,14 +20,14 @@ def create_site(site: SiteCreate, db: Session = Depends(get_db), current_operato
     location_wkt = shape(site.location).wkt if site.location else None
     boundary_wkt = shape(site.boundary).wkt if site.boundary else None
     
-    obj = Site(id=site.id, name=site.name, site_type=site.site_type, status=site.status, 
+    obj = Site(id=site.id, name=site.name, site_code=site.site_code, site_type=site.site_type, status=site.status, 
                description=site.description, location=location_wkt, boundary=boundary_wkt)
     db_obj = sites_service.create(db, obj_in=obj)
     
     loc_geojson = mapping(to_shape(db_obj.location)) if db_obj.location else site.location
     bound_geojson = mapping(to_shape(db_obj.boundary)) if db_obj.boundary else site.boundary
     
-    return SiteRead(id=db_obj.id, name=db_obj.name, site_type=db_obj.site_type, status=db_obj.status, 
+    return SiteRead(id=db_obj.id, name=db_obj.name, site_code=db_obj.site_code, site_type=db_obj.site_type, status=db_obj.status, 
                     description=db_obj.description, location=loc_geojson, boundary=bound_geojson, 
                     created_at=db_obj.created_at, updated_at=db_obj.updated_at)
 
@@ -38,10 +38,43 @@ def list_sites(skip: int = Query(0, ge=0), limit: int = Query(10, ge=1, le=100),
     for item in items:
         loc = mapping(to_shape(item.location)) if item.location else {"type":"Point","coordinates":[0,0]}
         bound = mapping(to_shape(item.boundary)) if getattr(item, 'boundary', None) else None
-        out.append(SiteRead(id=item.id, name=item.name, site_type=item.site_type, status=item.status,
+        out.append(SiteRead(id=item.id, name=item.name, site_code=item.site_code, site_type=item.site_type, status=item.status,
                             description=item.description, location=loc, boundary=bound,
                             created_at=item.created_at, updated_at=item.updated_at))
     return PaginatedResponse(page=skip//limit + 1, page_size=limit, total=total, items=out)
+
+@router.get("/{site_id}/context")
+def get_site_context(site_id: str, db: Session = Depends(get_db), current_operator: Operator = Depends(RequirePermission("site:read"))):
+    from app.services.digital_twin_service import digital_twin_service
+    ctx = digital_twin_service.get_site_context(db, site_id)
+    if not ctx: raise HTTPException(status_code=404, detail="Site not found")
+    
+    site_item = ctx['site']
+    loc = mapping(to_shape(site_item.location)) if site_item.location else {"type":"Point","coordinates":[0,0]}
+    bound = mapping(to_shape(site_item.boundary)) if getattr(site_item, 'boundary', None) else None
+    
+    out_assets = []
+    for item in ctx['assets']:
+        aloc = mapping(to_shape(item.location)) if item.location else {"type":"Point","coordinates":[0,0]}
+        out_assets.append(AssetRead(id=item.id, site_id=item.site_id, name=item.name, asset_code=item.asset_code, asset_type=item.asset_type, 
+                     criticality=item.criticality, operational_status=item.operational_status, location=aloc, protection_radius=item.protection_radius, 
+                     status=item.status, description=item.description, metadata_json=item.metadata_json,
+                     created_at=item.created_at, updated_at=item.updated_at))
+                     
+    out_zones = []
+    for item in ctx['restricted_zones']:
+        zbound = mapping(to_shape(item.boundary)) if item.boundary else {"type":"Polygon","coordinates":[]}
+        out_zones.append(ZoneRead(id=item.id, site_id=item.site_id, name=item.name, zone_code=item.zone_code, zone_type=item.zone_type, 
+                    description=item.description, severity=item.severity, boundary=zbound, active=item.active, 
+                    created_at=item.created_at, updated_at=item.updated_at))
+                    
+    return {
+        "site": SiteRead(id=site_item.id, name=site_item.name, site_code=site_item.site_code, site_type=site_item.site_type, status=site_item.status,
+                    description=site_item.description, location=loc, boundary=bound,
+                    created_at=site_item.created_at, updated_at=site_item.updated_at),
+        "assets": out_assets,
+        "restricted_zones": out_zones
+    }
 
 @router.get("/{site_id}", response_model=SiteRead)
 def get_site(site_id: str, db: Session = Depends(get_db), current_operator: Operator = Depends(RequirePermission("site:read"))):
@@ -49,6 +82,6 @@ def get_site(site_id: str, db: Session = Depends(get_db), current_operator: Oper
     if not item: raise HTTPException(status_code=404, detail="Site not found")
     loc = mapping(to_shape(item.location)) if item.location else {"type":"Point","coordinates":[0,0]}
     bound = mapping(to_shape(item.boundary)) if getattr(item, 'boundary', None) else None
-    return SiteRead(id=item.id, name=item.name, site_type=item.site_type, status=item.status,
+    return SiteRead(id=item.id, name=item.name, site_code=item.site_code, site_type=item.site_type, status=item.status,
                     description=item.description, location=loc, boundary=bound,
                     created_at=item.created_at, updated_at=item.updated_at)

@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
-from app.api.v1.endpoints import health, websockets, sites, assets, zones, sensors, tracks, observations, alerts, incidents, auth
+from app.api.v1.endpoints import health, websockets, sites, assets, zones, sensors, tracks, observations, alerts, incidents, auth, digital_twin
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -30,6 +30,7 @@ app.include_router(health.router, prefix="/api/v1")
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["Auth"])
 app.include_router(websockets.router, prefix="/api/v1")
 app.include_router(sites.router, prefix="/api/v1/sites", tags=["Sites"])
+app.include_router(digital_twin.router, prefix="/api/v1", tags=["Digital Twin"])
 app.include_router(assets.router, prefix="/api/v1/sites/{site_id}/assets", tags=["Assets"])
 app.include_router(zones.router, prefix="/api/v1/sites/{site_id}/zones", tags=["Zones"])
 app.include_router(sensors.router, prefix="/api/v1/sites/{site_id}/sensors", tags=["Sensors"])

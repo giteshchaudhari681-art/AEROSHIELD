@@ -24,6 +24,13 @@ class AssetCriticality(str, enum.Enum):
     HIGH = "HIGH"
     CRITICAL = "CRITICAL"
 
+class OperationalStatus(str, enum.Enum):
+    OPERATIONAL = "OPERATIONAL"
+    DEGRADED = "DEGRADED"
+    MAINTENANCE = "MAINTENANCE"
+    OFFLINE = "OFFLINE"
+    UNKNOWN = "UNKNOWN"
+
 class ZoneSeverity(str, enum.Enum):
     LOW = "LOW"
     MEDIUM = "MEDIUM"
@@ -60,6 +67,7 @@ class Site(Base):
     
     id = Column(String, primary_key=True, index=True)
     name = Column(String, nullable=False)
+    site_code = Column(String, nullable=True, unique=True, index=True)
     description = Column(Text, nullable=True)
     site_type = Column(SQLEnum(SiteType), nullable=False)
     status = Column(String, nullable=False, default="ACTIVE")
@@ -84,9 +92,11 @@ class CriticalAsset(Base):
     id = Column(String, primary_key=True, index=True)
     site_id = Column(String, ForeignKey("sites.id"), nullable=False)
     name = Column(String, nullable=False)
+    asset_code = Column(String, nullable=True, index=True)
     asset_type = Column(String, nullable=False)
     description = Column(Text, nullable=True)
     criticality = Column(SQLEnum(AssetCriticality), nullable=False)
+    operational_status = Column(SQLEnum(OperationalStatus), nullable=False, default=OperationalStatus.UNKNOWN)
     
     location = Column(Geometry(geometry_type='POINT', srid=4326), nullable=False)
     protection_radius = Column(Float, nullable=True) # in meters
@@ -106,7 +116,9 @@ class RestrictedZone(Base):
     id = Column(String, primary_key=True, index=True)
     site_id = Column(String, ForeignKey("sites.id"), nullable=False)
     name = Column(String, nullable=False)
+    zone_code = Column(String, nullable=True, index=True)
     zone_type = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
     
     boundary = Column(Geometry(geometry_type='POLYGON', srid=4326), nullable=False)
     severity = Column(SQLEnum(ZoneSeverity), nullable=False)
