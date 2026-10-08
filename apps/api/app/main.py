@@ -2,13 +2,20 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
-from app.api.v1.endpoints import health, websockets, sites, assets, zones, sensors, tracks, observations, alerts, incidents, auth, digital_twin
+from app.api.v1.endpoints import health, websockets, sites, assets, zones, sensors, tracks, observations, alerts, incidents, auth, digital_twin, simulation
+
+from app.services.event_publisher_service import event_publisher
+from app.services.redis_subscriber import redis_subscriber
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
+    event_publisher.start()
+    await redis_subscriber.start()
     yield
     # Shutdown
+    event_publisher.stop()
+    await redis_subscriber.stop()
 
 app = FastAPI(
     title="AEROSHIELD API",
@@ -38,4 +45,5 @@ app.include_router(tracks.router, prefix="/api/v1/tracks", tags=["Tracks"])
 app.include_router(observations.router, prefix="/api/v1/observations", tags=["Observations"])
 app.include_router(alerts.router, prefix="/api/v1/alerts", tags=["Alerts"])
 app.include_router(incidents.router, prefix="/api/v1/incidents", tags=["Incidents"])
+app.include_router(simulation.router, prefix="/api/v1/simulation", tags=["Simulation"])
 

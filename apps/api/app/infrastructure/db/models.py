@@ -61,6 +61,30 @@ class IncidentStatus(str, enum.Enum):
     RESOLVED = "RESOLVED"
     CLOSED = "CLOSED"
 
+class SensorStatus(str, enum.Enum):
+    ACTIVE = "ACTIVE"
+    INACTIVE = "INACTIVE"
+    DEGRADED = "DEGRADED"
+    MAINTENANCE = "MAINTENANCE"
+    OFFLINE = "OFFLINE"
+    UNKNOWN = "UNKNOWN"
+
+class SensorHealthStatus(str, enum.Enum):
+    HEALTHY = "HEALTHY"
+    WARNING = "WARNING"
+    CRITICAL = "CRITICAL"
+    UNKNOWN = "UNKNOWN"
+    
+class ObservationType(str, enum.Enum):
+    DETECTION = "DETECTION"
+    POSITION = "POSITION"
+    VELOCITY = "VELOCITY"
+    SIGNAL = "SIGNAL"
+    THERMAL = "THERMAL"
+    ACOUSTIC = "ACOUSTIC"
+    IDENTIFICATION = "IDENTIFICATION"
+    STATUS = "STATUS"
+
 
 class Site(Base):
     __tablename__ = "sites"
@@ -135,8 +159,12 @@ class Sensor(Base):
     id = Column(String, primary_key=True, index=True)
     site_id = Column(String, ForeignKey("sites.id"), nullable=False)
     name = Column(String, nullable=False)
+    sensor_code = Column(String, nullable=True, index=True, unique=True)
     sensor_type = Column(String, nullable=False) # e.g. RADAR, RF, EO_IR, ACOUSTIC, SIMULATED
     
+    operational_status = Column(SQLEnum(SensorStatus), nullable=False, default=SensorStatus.UNKNOWN)
+    health_status = Column(SQLEnum(SensorHealthStatus), nullable=False, default=SensorHealthStatus.UNKNOWN)
+    is_enabled = Column(Boolean, nullable=False, default=True)
     status = Column(String, nullable=False, default="ACTIVE")
     location = Column(Geometry(geometry_type='POINT', srid=4326), nullable=False)
     
@@ -188,7 +216,9 @@ class SensorObservation(Base):
     sensor_id = Column(String, ForeignKey("sensors.id"), nullable=False)
     track_id = Column(String, ForeignKey("aerial_tracks.id"), nullable=True) # can be null before fusion
     
+    observation_type = Column(SQLEnum(ObservationType), nullable=False, default=ObservationType.DETECTION)
     observed_at = Column(DateTime(timezone=True), nullable=False, index=True)
+    received_at = Column(DateTime(timezone=True), nullable=False, index=True)
     sensor_type = Column(String, nullable=False)
     
     location = Column(Geometry(geometry_type='POINT', srid=4326), nullable=True) # Contains lat/lon
@@ -394,3 +424,32 @@ class AuditLog(Base):
     timestamp = Column(DateTime(timezone=True), server_default=func.now(), index=True)
     metadata_json = Column(JSON, nullable=True)
     ip_address = Column(String, nullable=True)
+
+class OutboxStatus(str, enum.Enum):
+    PENDING = "PENDING"
+    PROCESSING = "PROCESSING"
+    PUBLISHED = "PUBLISHED"
+    FAILED = "FAILED"
+
+class EventOutbox(Base):
+    __tablename__ = "event_outbox"
+
+    id = Column(String, primary_key=True, index=True)
+    event_id = Column(String, unique=True, index=True, nullable=False)
+    event_type = Column(String, nullable=False)
+    schema_version = Column(Integer, nullable=False, default=1)
+    aggregate_type = Column(String, nullable=False)
+    aggregate_id = Column(String, nullable=False)
+    correlation_id = Column(String, nullable=True)
+    occurred_at = Column(DateTime(timezone=True), nullable=False)
+    
+    payload = Column(JSON, nullable=False)
+    
+    status = Column(SQLEnum(OutboxStatus), nullable=False, default=OutboxStatus.PENDING, index=True)
+    attempts = Column(Integer, nullable=False, default=0)
+    available_at = Column(DateTime(timezone=True), nullable=False, index=True)
+    published_at = Column(DateTime(timezone=True), nullable=True)
+    last_error = Column(Text, nullable=True)
+    
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())

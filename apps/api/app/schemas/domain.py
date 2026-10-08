@@ -1,7 +1,7 @@
 from pydantic import BaseModel, ConfigDict
 from typing import Optional, Any
 from datetime import datetime
-from app.infrastructure.db.models import SiteType, AssetCriticality, ZoneSeverity, OperationalStatus
+from app.infrastructure.db.models import SiteType, AssetCriticality, ZoneSeverity, OperationalStatus, SensorStatus, SensorHealthStatus, ObservationType
 
 # Base schemas
 class SiteBase(BaseModel):
@@ -65,7 +65,11 @@ class ZoneRead(ZoneBase):
 
 class SensorBase(BaseModel):
     name: str
+    sensor_code: Optional[str] = None
     sensor_type: str
+    operational_status: SensorStatus = SensorStatus.UNKNOWN
+    health_status: SensorHealthStatus = SensorHealthStatus.UNKNOWN
+    is_enabled: bool = True
     status: str = "ACTIVE"
     location: Optional[dict] = None
     manufacturer: Optional[str] = None

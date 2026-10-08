@@ -1,5 +1,5 @@
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 
@@ -23,7 +23,9 @@ class ApiError(BaseModel):
 class ObservationBase(BaseModel):
     sensor_id: str
     sensor_type: str
+    observation_type: str
     observed_at: datetime
+    received_at: Optional[datetime] = None
     location: Optional[Dict[str, Any]] = None
     altitude: Optional[float] = None
     speed: Optional[float] = None
@@ -35,7 +37,7 @@ class ObservationRead(ObservationBase):
     id: str
     track_id: Optional[str] = None
     created_at: datetime
-    class Config: from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class TrackBase(BaseModel):
     track_identifier: str
