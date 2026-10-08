@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
-from app.api.v1.endpoints import health, websockets, sites, assets, zones, sensors, tracks, observations, alerts, incidents, auth, digital_twin, simulation
+from app.api.v1.endpoints import health, websockets, sites, assets, zones, sensors, tracks, observations, alerts, incidents, auth, digital_twin, simulation, fusion
 
 from app.services.event_publisher_service import event_publisher
 from app.services.redis_subscriber import redis_subscriber
@@ -46,4 +46,5 @@ app.include_router(observations.router, prefix="/api/v1/observations", tags=["Ob
 app.include_router(alerts.router, prefix="/api/v1/alerts", tags=["Alerts"])
 app.include_router(incidents.router, prefix="/api/v1/incidents", tags=["Incidents"])
 app.include_router(simulation.router, prefix="/api/v1/simulation", tags=["Simulation"])
+app.include_router(fusion.router, prefix="/api/v1/fusion", tags=["Fusion"])
 

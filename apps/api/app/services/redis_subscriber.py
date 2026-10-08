@@ -6,6 +6,7 @@ from typing import Optional
 
 from app.core.config import settings
 from app.services.websocket_manager import ws_manager
+from app.services.fusion_consumer import FusionConsumer
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +43,8 @@ class RedisEventSubscriber:
                 if message["type"] == "message":
                     try:
                         event = json.loads(message["data"])
+                        # Route to fusion consumer in background thread
+                        await asyncio.to_thread(FusionConsumer.handle_event, event)
                         # Route to WebSocket manager
                         await ws_manager.broadcast(event)
                     except json.JSONDecodeError:
