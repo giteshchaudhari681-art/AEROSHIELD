@@ -200,6 +200,9 @@ class AerialTrack(Base):
     confidence = Column(Float, nullable=True)
     status = Column(SQLEnum(TrackStatus), nullable=False, default=TrackStatus.ACTIVE)
     metadata_json = Column(JSON, nullable=True)
+    state_version = Column(Integer, nullable=False, default=1)
+    update_count = Column(Integer, nullable=False, default=1)
+    terminated_at = Column(DateTime(timezone=True), nullable=True)
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -511,3 +514,19 @@ class FusedContactObservation(Base):
     
     fused_contact = relationship("FusedContact", back_populates="observations")
     observation = relationship("SensorObservation")
+
+class TrackObservation(Base):
+    __tablename__ = "track_observations"
+    
+    id = Column(String, primary_key=True, index=True)
+    track_id = Column(String, ForeignKey("aerial_tracks.id"), nullable=False, index=True)
+    fused_contact_id = Column(String, ForeignKey("fused_contacts.id"), nullable=False, index=True, unique=True)
+    
+    association_score = Column(Float, nullable=False)
+    decision = Column(String, nullable=False)
+    evidence = Column(JSON, nullable=True)
+    
+    recorded_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    track = relationship("AerialTrack")
+    fused_contact = relationship("FusedContact")
