@@ -13,11 +13,13 @@
   "dependencies": {
     "@tailwindcss/postcss": "^4.3.3",
     "autoprefixer": "^10.6.1",
+    "framer-motion": "^14.1.0",
     "lucide-react": "^1.53.0",
     "maplibre-gl": "^6.13.0",
     "postcss": "^8.5.29",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
+    "react-parallax-tilt": "^1.7.346",
     "react-router-dom": "^7.18.4",
     "recharts": "^3.10.1",
     "tailwindcss": "^4.3.3"
@@ -27,7 +29,9 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
     "@vitejs/plugin-react": "^6.1.1",
+    "d3-geo": "^3.1.1",
     "oxlint": "^1.81.0",
+    "topojson-client": "^3.1.0",
     "typescript": "~6.0.2",
     "vite": "^8.3.0"
   }

@@ -530,3 +530,46 @@ class TrackObservation(Base):
     
     track = relationship("AerialTrack")
     fused_contact = relationship("FusedContact")
+
+class IdentityRecord(Base):
+    __tablename__ = "identity_records"
+    id = Column(String, primary_key=True, index=True)
+    identity_code = Column(String, nullable=False, unique=True)
+    display_name = Column(String, nullable=False)
+    identity_type = Column(String, nullable=False)
+    status = Column(String, nullable=False)
+
+class ClassificationAssessment(Base):
+    __tablename__ = "classification_assessments"
+    id = Column(String, primary_key=True, index=True)
+    track_id = Column(String, ForeignKey("aerial_tracks.id"), nullable=False)
+    class_code = Column(String, nullable=False)
+    status = Column(String, nullable=False)
+    evidence_score = Column(Float, nullable=True)
+    
+    track = relationship("AerialTrack")
+
+class RiskAssessment(Base):
+    __tablename__ = "risk_assessments"
+    id = Column(String, primary_key=True, index=True)
+    track_id = Column(String, ForeignKey("aerial_tracks.id"), nullable=False)
+    assessment_status = Column(String, nullable=False)
+    review_priority = Column(String, nullable=False)
+    risk_score = Column(Float, nullable=True)
+    
+    track = relationship("AerialTrack")
+
+class EvidenceItem(Base):
+    __tablename__ = "evidence_items"
+    id = Column(String, primary_key=True, index=True)
+    incident_id = Column(String, ForeignKey("incidents.id"), nullable=False)
+    evidence_type = Column(String, nullable=False)
+    source_reference = Column(String, nullable=False)
+    integrity_digest = Column(String, nullable=True)
+
+class CustodyEvent(Base):
+    __tablename__ = "custody_events"
+    id = Column(String, primary_key=True, index=True)
+    evidence_id = Column(String, ForeignKey("evidence_items.id"), nullable=False)
+    action_type = Column(String, nullable=False)
+    actor = Column(String, nullable=False)
