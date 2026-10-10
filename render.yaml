@@ -34,4 +34,3 @@ services:
 databases:
   - name: aeroshield-db
     databaseName: aeroshield
-    user: postgres
