@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, ChevronRight, Activity, Crosshair, Map, ShieldAlert, Cpu, Zap, Cloud, Database, Lock, CheckCircle, Navigation, Server, Search, Check, Layers, Radio } from 'lucide-react';
-import { DigitalTwinMap } from '../components/DigitalTwinMap';
 
 export const Landing: React.FC = () => {
   const navigate = useNavigate();
@@ -25,21 +24,6 @@ export const Landing: React.FC = () => {
       window.removeEventListener('mousemove', handleMouseMove);
     };
   }, []);
-
-  // Fake demo data for the landing page live map
-  const demoSite = {
-    id: "landing-site",
-    name: "Golden Gate Sector",
-    location: { type: "Point", coordinates: [-122.4783, 37.8199] },
-    boundary: null
-  };
-  const demoAssets = [
-    { id: "a1", name: "Unknown Drone", criticality: "HIGH", operational_status: "OFFLINE", location: { type: "Point", coordinates: [-122.475, 37.821] } },
-    { id: "a2", name: "Auth Quadcopter", criticality: "LOW", operational_status: "OPERATIONAL", location: { type: "Point", coordinates: [-122.482, 37.818] } },
-  ];
-  const demoZones = [
-    { id: "z1", name: "Restricted Airspace R-99", severity: "CRITICAL", boundary: { type: "Polygon", coordinates: [[[-122.48, 37.822], [-122.47, 37.822], [-122.47, 37.818], [-122.48, 37.818], [-122.48, 37.822]]] } }
-  ];
 
   return (
     <div className="bg-slate-950 min-h-screen text-slate-200 font-sans selection:bg-blue-500/30 selection:text-blue-200 overflow-x-hidden perspective-[2000px]">
