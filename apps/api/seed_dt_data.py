@@ -37,7 +37,12 @@ def seed_dt():
             ("asset-002", "Power Substation", "PWR", "SUBSTATION", AssetCriticality.HIGH, OperationalStatus.OPERATIONAL, -122.416, 37.776, 30),
             ("asset-003", "Communication Tower", "COM", "COMMUNICATION_TOWER", AssetCriticality.MEDIUM, OperationalStatus.DEGRADED, -122.414, 37.774, 20),
             ("asset-004", "Fuel Storage Area", "FUEL", "FUEL_STORAGE", AssetCriticality.HIGH, OperationalStatus.MAINTENANCE, -122.417, 37.777, 40),
-            ("asset-005", "Operations Building", "OPS", "BUILDING", AssetCriticality.LOW, OperationalStatus.OPERATIONAL, -122.418, 37.772, 25)
+            ("asset-005", "Operations Building", "OPS", "BUILDING", AssetCriticality.LOW, OperationalStatus.OPERATIONAL, -122.418, 37.772, 25),
+            ("asset-006", "Secondary Substation", "PWR-2", "SUBSTATION", AssetCriticality.HIGH, OperationalStatus.OPERATIONAL, -122.411, 37.776, 30),
+            ("asset-007", "Security Checkpoint Alpha", "SEC-A", "BUILDING", AssetCriticality.MEDIUM, OperationalStatus.OPERATIONAL, -122.413, 37.778, 15),
+            ("asset-008", "Security Checkpoint Beta", "SEC-B", "BUILDING", AssetCriticality.MEDIUM, OperationalStatus.OPERATIONAL, -122.419, 37.771, 15),
+            ("asset-009", "Water Pump Station", "WTR", "INFRASTRUCTURE", AssetCriticality.LOW, OperationalStatus.OFFLINE, -122.412, 37.772, 20),
+            ("asset-010", "Backup Generator", "GEN", "INFRASTRUCTURE", AssetCriticality.CRITICAL, OperationalStatus.OPERATIONAL, -122.416, 37.774, 20)
         ]
         
         for aid, name, code, atype, crit, op_status, lon, lat, rad in assets:
@@ -68,7 +73,7 @@ def seed_dt():
             ("zone-003", "Temporary Sensitive Zone", "TEMP", "SENSITIVE", ZoneSeverity.HIGH, -122.417, 37.777, 0.001)
         ]
         
-        for zid, name, code, ztype, sev, clat, clon, offset in zones:
+        for zid, name, code, ztype, sev, clon, clat, offset in zones:
             z = db.query(RestrictedZone).filter(RestrictedZone.id == zid).first()
             if not z:
                 # Create a square polygon around center
